@@ -17,7 +17,7 @@ static NSString * const cityDetailsComponent = @"city";
 static NSString * const apiKey = @"27aec701-5d3f-4dd9-b317-f0b5c03da60e";
 
 @implementation DVMCityAirQualityController
-
+  
 + (void)fetchSupportedCountriesWithCompletion:(void (^)(NSArray<NSString *> * , NSError *))completion
 {
     NSURL *baseURL = [NSURL URLWithString:baseURLString];
@@ -82,11 +82,16 @@ static NSString * const apiKey = @"27aec701-5d3f-4dd9-b317-f0b5c03da60e";
     // Queries: apiKey and country
     NSURLQueryItem *countryQuery = [[NSURLQueryItem alloc] initWithName:@"country" value:country];
     NSURLQueryItem *apiKeyQuery = [[NSURLQueryItem alloc] initWithName:@"key" value:apiKey];
+    
     [queryItems addObject:countryQuery];
     [queryItems addObject:apiKeyQuery];
+    
     NSURLComponents *urlComponents = [[NSURLComponents alloc]initWithURL:statesURL resolvingAgainstBaseURL:true];
+    
     [urlComponents setQueryItems:queryItems];
+    
     NSURL *finalURL = [urlComponents URL];
+    NSLog(@"StatesURL: %@", finalURL);
     
     [[NSURLSession.sharedSession dataTaskWithURL:finalURL completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error)
     {
@@ -115,6 +120,7 @@ static NSString * const apiKey = @"27aec701-5d3f-4dd9-b317-f0b5c03da60e";
             NSString *state = [[NSString alloc] initWithString:statesDictionary[@"state"]];
             [statesArray addObject:state];
         }
+        completion(statesArray, error);
     }] resume];
 }
 
@@ -125,15 +131,21 @@ static NSString * const apiKey = @"27aec701-5d3f-4dd9-b317-f0b5c03da60e";
     NSURL *citiesURL = [versionURL URLByAppendingPathComponent:cityComponent];
     
     NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray new];
+    
     NSURLQueryItem *countryQuery = [[NSURLQueryItem alloc] initWithName:@"country" value:country];
     NSURLQueryItem *stateQuery = [[NSURLQueryItem alloc] initWithName:@"state" value:state];
     NSURLQueryItem *apiKeyQuery = [[NSURLQueryItem alloc] initWithName:@"key" value:apiKey];
+    
     [queryItems addObject:countryQuery];
     [queryItems addObject:stateQuery];
     [queryItems addObject:apiKeyQuery];
+    
     NSURLComponents *urlComponents = [[NSURLComponents alloc]initWithURL:citiesURL resolvingAgainstBaseURL:true];
+    
     [urlComponents setQueryItems:queryItems];
+    
     NSURL *finalURL = [urlComponents URL];
+    
     NSLog(@"FINAL URL FOR STATES ARRAY: %@", finalURL);
     
     [[NSURLSession.sharedSession dataTaskWithURL:finalURL completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
@@ -156,7 +168,7 @@ static NSString * const apiKey = @"27aec701-5d3f-4dd9-b317-f0b5c03da60e";
             NSString *city = [[NSString alloc] initWithString:cityDictionary[@"city"]];
             [citiesArray addObject:city];
         }
-        
+        completion (citiesArray, error);
     }] resume];
 }
 
@@ -167,18 +179,25 @@ static NSString * const apiKey = @"27aec701-5d3f-4dd9-b317-f0b5c03da60e";
     NSURL *cityDetailURL = [versionURL URLByAppendingPathComponent:cityDetailsComponent];
     
     NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray new];
+    
     NSURLQueryItem *countryQuery = [[NSURLQueryItem alloc] initWithName:@"country" value:country];
     NSURLQueryItem *stateQuery = [[NSURLQueryItem alloc] initWithName:@"state" value:state];
     NSURLQueryItem *cityQuery = [[NSURLQueryItem alloc] initWithName:@"city" value:city];
     NSURLQueryItem *apiKeyQuery = [[NSURLQueryItem alloc] initWithName:@"key" value:apiKey];
+    
     [queryItems addObject:countryQuery];
     [queryItems addObject:stateQuery];
     [queryItems addObject:cityQuery];
     [queryItems addObject:apiKeyQuery];
+    
     NSURLComponents *urlComponents = [[NSURLComponents alloc]initWithURL:cityDetailURL resolvingAgainstBaseURL:true];
+    
     [urlComponents setQueryItems:queryItems];
+    
     NSURL *finalURL = [urlComponents URL];
+    
     NSLog(@"FinalURL for CityDetails: %@", finalURL);
+    
     [[NSURLSession.sharedSession dataTaskWithURL:finalURL completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
                 if (error)
                 {
@@ -191,6 +210,7 @@ static NSString * const apiKey = @"27aec701-5d3f-4dd9-b317-f0b5c03da60e";
                     NSLog(@"There appears to be no data.");
                     return completion(nil, error);
                 }
+        
         NSDictionary *topLevelDictionary = [NSJSONSerialization JSONObjectWithData:data options: 2 error:&error];
         NSDictionary *dataDictionary = topLevelDictionary[@"data"];
         DVMCityAirQuality *cityAirQualityObject = [[DVMCityAirQuality alloc] initWithLocationDictionary:dataDictionary];
@@ -198,7 +218,4 @@ static NSString * const apiKey = @"27aec701-5d3f-4dd9-b317-f0b5c03da60e";
         return completion (cityAirQualityObject, error);
     }] resume];
 }
-
-
-
 @end
